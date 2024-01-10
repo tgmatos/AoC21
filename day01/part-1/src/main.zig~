@@ -1,0 +1,43 @@
+const std = @import("std");
+const File = @import("std.fs.File");
+const fmt = @import("std.fmt");
+
+const filename = "input";
+
+pub fn main() !void {
+    var file = try std.fs.cwd().openFile(filename, .{ .mode = .read_only });
+    defer file.close();
+
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var in_stream = buf_reader.reader();
+
+    var buf: [1024]u8 = undefined;
+    var count: u16 = 0;
+    var increasedCounter: u16 = undefined;
+    var previousNumber: i32 = undefined;
+    var number: i32 = undefined;
+
+    while (try in_stream.rebuf, '\n')) |line| {
+        std.debug.print("{s}", .{line});
+
+        number = try std.fmt.parseInt(i32, line, 10);
+
+        if (count == 0) {
+            previousNumber = number;
+            increasedCounter = 0;
+        }
+
+        if (previousNumber >= number) {
+            increasedCounter += 1;
+        }
+
+        previousNumber = number;
+        count += 1;
+    }
+}
+
+test "str to i32" {
+    const linha = [_]u8{ 49, 53, 49 };
+    const number = try std.fmt.parseInt(i32, &linha, 10);
+    std.debug.print("\n{any}\n", .{number});
+}

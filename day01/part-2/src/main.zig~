@@ -1,0 +1,60 @@
+const std = @import("std");
+const File = @import("std.fs.File");
+const fmt = @import("std.fmt");
+const name = "input";
+
+fn readFile(filename: []const u8, allocator: std.mem.Allocator) anyerror![]u8 {
+    var file = std.fs.cwd().openFile(filename, .{ .mode = .read_only }) catch |err| return err;
+    defer file.close();
+
+    var file_buffer = file.readToEndAlloc(allocator, file.getEndPos() catch 0) catch |err| return err;
+    return file_buffer;
+}
+
+fn parseInput(input: []u8, allocator: std.mem.Allocator) anyerror![]i32 {
+    var pos: usize = 0;
+    var iter = std.mem.splitSequence(u8, input, "\n");
+
+    var arr = allocator.alloc(i32, input.len) catch |err| return err;
+
+    while (iter.next()) |line| {
+        arr[pos] = try std.fmt.parseInt(i32, line, 10);
+        pos += 1;
+    }
+
+    return arr;
+}
+
+fn sumInputs(input: []i32, allocator: std.mem.Allocator) ![]i64 {
+    var arr = allocator.alloc(i64, input.len) catch |err| return err;
+    var i: usize = 0;
+    for (input) |sum| {
+        if (i == input.len) {
+            arr[i] = sum;
+        }
+
+        //r[i] = sum + input[i + 1] + input[i + 2];
+        std.debug.print("{d}, .{
+        i += 1;
+    }
+
+    return arr;
+}
+
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var arrayFile = try readFile(name, allocator);
+
+    var arrayParsed = try parseInput(arrayFile, allocator);
+    defer allocator.free(arrayParsed);
+
+    allocator.free(arrayFile);
+
+    var arraySum = try sumInputs(arrayParsed, allocator);
+    defer allocator.free(arraySum);
+
+    std.debug.print("{d}", .{arraySum[0]});
+}
